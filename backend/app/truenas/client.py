@@ -146,10 +146,11 @@ class TrueNasClient:
             logger.warning("pool.query failed: %s", e)
 
         try:
+            pool_names = [p.name for p in self.pools]
             raw_datasets: list[dict[str, Any]] = await self._send_rpc(
                 ws,
                 "pool.dataset.query",
-                [[["name", "in", ["media", "apps"]]]],
+                [[["name", "in", pool_names]]],
             )
             self.datasets = [
                 TrueNasDatasetInfo(
@@ -207,10 +208,11 @@ class TrueNasClient:
                 for p in raw_pools
             ]
             self.disk_pool_map = self._build_disk_pool_map(raw_pools)
+            pool_names_slow = [p.name for p in self.pools]
             raw_datasets: list[dict[str, Any]] = await self._send_rpc(
                 ws,
                 "pool.dataset.query",
-                [[["name", "in", ["media", "apps"]]]],
+                [[["name", "in", pool_names_slow]]],
             )
             self.datasets = [
                 TrueNasDatasetInfo(

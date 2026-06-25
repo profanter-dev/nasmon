@@ -129,17 +129,23 @@ async def _fast_loop() -> None:
                     )
                 )
 
+        dataset_map = {ds.name: ds for ds in _truenas.datasets}
         pools: list[PoolData] = []
         for pool in _truenas.pools:
-            size = pool.size or 0
-            allocated = pool.allocated or 0
-            usage = (allocated / size * 100.0) if size > 0 else 0.0
+            ds = dataset_map.get(pool.name)
+            if ds and ds.used is not None and ds.available is not None:
+                used_bytes = ds.used
+                total_bytes = ds.used + ds.available
+            else:
+                used_bytes = pool.allocated or 0
+                total_bytes = pool.size or 0
+            usage = (used_bytes / total_bytes * 100.0) if total_bytes > 0 else 0.0
             pools.append(
                 PoolData(
                     name=pool.name,
                     status=pool.status,
-                    used_bytes=allocated,
-                    total_bytes=size,
+                    used_bytes=used_bytes,
+                    total_bytes=total_bytes,
                     usage_percent=usage,
                 )
             )
