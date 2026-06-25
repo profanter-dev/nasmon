@@ -98,7 +98,7 @@ async def _fast_loop() -> None:
             if device not in allowed_disks:
                 continue
             meta = disk_meta.get(device)
-            pool = _truenas.disk_pool_map.get(device)
+            pool = (meta.pool if meta else None) or _truenas.disk_pool_map.get(device)
             if device.startswith("nvme") or (meta and meta.type == "SSD"):
                 nvmes.append(
                     NvmeData(

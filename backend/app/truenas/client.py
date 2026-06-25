@@ -98,7 +98,7 @@ class TrueNasClient:
 
     async def _fetch_all(self, ws: Any) -> None:
         try:
-            raw_disks: list[dict[str, Any]] = await self._send_rpc(ws, "disk.query", [[], {"extra": {}}])
+            raw_disks: list[dict[str, Any]] = await self._send_rpc(ws, "disk.query", [[], {"extra": {"pools": True}}])
             self.disks = [
                 TrueNasDiskInfo(
                     name=d.get("name", ""),
@@ -229,7 +229,7 @@ class TrueNasClient:
         if ws is None:
             return
         try:
-            raw_disks: list[dict[str, Any]] = await self._send_rpc(ws, "disk.query", [[], {"extra": {}}])
+            raw_disks: list[dict[str, Any]] = await self._send_rpc(ws, "disk.query", [[], {"extra": {"pools": True}}])
             self.disks = [
                 TrueNasDiskInfo(
                     name=d.get("name", ""),
