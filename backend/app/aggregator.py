@@ -7,14 +7,12 @@ from typing import Any
 from fastapi import WebSocket
 
 from app.collectors.disks import get_disk_io, get_nvme_temperatures
-from app.collectors.fans import get_fan_data
 from app.collectors.network import get_network_data
 from app.collectors.services import get_services_data, refresh_arr_health
 from app.collectors.system import get_cpu_data, get_ram_data, get_top_processes
 from app.config import settings
 from app.models import (
     DashboardSnapshot,
-    FanData,
     HddData,
     NvmeData,
     PoolData,
@@ -85,7 +83,6 @@ async def _fast_loop() -> None:
         net_list, _prev_net = get_network_data(_prev_net, elapsed)
         disk_io, _prev_disk = get_disk_io(_prev_disk, elapsed)
         nvme_temps = get_nvme_temperatures()
-        fans = get_fan_data()
         services = await get_services_data(_arr_health_cache)
 
         disk_meta = {d.name: d for d in _truenas.disks}
@@ -160,7 +157,6 @@ async def _fast_loop() -> None:
             hdds=hdds,
             nvmes=nvmes,
             pools=pools,
-            fans=fans,
             truenas_connected=_truenas.connected,
             services=services,
         )

@@ -63,11 +63,6 @@ class PoolData(BaseModel):
     usage_percent: float
 
 
-class FanData(BaseModel):
-    label: str
-    rpm: int | None
-
-
 class ServiceAlert(BaseModel):
     level: str
     source: str
@@ -95,6 +90,5 @@ class DashboardSnapshot(BaseModel):
     hdds: list[HddData]
     nvmes: list[NvmeData]
     pools: list[PoolData]
-    fans: list[FanData]
     truenas_connected: bool
     services: list[ServiceStatus]

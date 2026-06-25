@@ -10,7 +10,6 @@ import { RamCard } from "./components/cards/RamCard";
 import { NetworkCard } from "./components/cards/NetworkCard";
 import { PoolCard } from "./components/cards/PoolCard";
 import { DiskCard } from "./components/cards/DiskCard";
-import { FanCard } from "./components/cards/FanCard";
 import type { HddData, NvmeData, ServiceStatus } from "./types/dashboard";
 
 type DiskEntry = { type: "hdd"; data: HddData } | { type: "nvme"; data: NvmeData };
@@ -78,7 +77,6 @@ export default function App() {
           <CpuCard cpu={snapshot.cpu} />
           <RamCard ram={snapshot.ram} />
           <NetworkCard interfaces={snapshot.network} />
-          <FanCard fans={snapshot.fans} />
         </Section>
 
         {snapshot.pools.map((pool) => (

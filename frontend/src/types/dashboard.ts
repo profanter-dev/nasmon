@@ -60,11 +60,6 @@ export interface PoolData {
   usage_percent: number;
 }
 
-export interface FanData {
-  label: string;
-  rpm: number | null;
-}
-
 export interface ServiceAlert {
   level: "error" | "warning";
   source: string;
@@ -92,7 +87,6 @@ export interface DashboardSnapshot {
   hdds: HddData[];
   nvmes: NvmeData[];
   pools: PoolData[];
-  fans: FanData[];
   truenas_connected: boolean;
   services: ServiceStatus[];
 }
