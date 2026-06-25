@@ -10,9 +10,9 @@ from app.models import ServiceAlert, ServiceStatus
 logger = logging.getLogger(__name__)
 
 ARR_SERVICES: list[dict[str, Any]] = [
-    {"name": "sonarr", "url_attr": "sonarr_url", "key_attr": "sonarr_api_key"},
-    {"name": "radarr", "url_attr": "radarr_url", "key_attr": "radarr_api_key"},
-    {"name": "prowlarr", "url_attr": "prowlarr_url", "key_attr": "prowlarr_api_key"},
+    {"name": "sonarr", "url_attr": "sonarr_url", "key_attr": "sonarr_api_key", "health_path": "/api/v3/health"},
+    {"name": "radarr", "url_attr": "radarr_url", "key_attr": "radarr_api_key", "health_path": "/api/v3/health"},
+    {"name": "prowlarr", "url_attr": "prowlarr_url", "key_attr": "prowlarr_api_key", "health_path": "/api/v1/health"},
 ]
 
 
@@ -43,11 +43,11 @@ def _get_docker_containers() -> list[dict[str, Any]]:
         return []
 
 
-async def _fetch_arr_health(name: str, url: str, api_key: str) -> list[ServiceAlert]:
+async def _fetch_arr_health(name: str, url: str, api_key: str, health_path: str) -> list[ServiceAlert]:
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                f"{url}/api/v3/health",
+                f"{url}{health_path}",
                 headers={"X-Api-Key": api_key},
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as resp:
@@ -121,5 +121,5 @@ async def refresh_arr_health(cache: dict[str, list[ServiceAlert]]) -> None:
         key: str | None = getattr(settings, svc["key_attr"])
         if not url or not key:
             continue
-        alerts = await _fetch_arr_health(svc["name"], url, key)
+        alerts = await _fetch_arr_health(svc["name"], url, key, svc["health_path"])
         cache[svc["name"]] = alerts
