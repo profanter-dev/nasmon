@@ -106,6 +106,7 @@ async def _fast_loop() -> None:
                         temp_celsius=nvme_temps.get(device),
                         read_bytes_per_sec=read_bps,
                         write_bytes_per_sec=write_bps,
+                        pool=meta.pool if meta else None,
                     )
                 )
             else:
@@ -122,6 +123,7 @@ async def _fast_loop() -> None:
                         smart_healthy=smart_ok,
                         read_bytes_per_sec=read_bps,
                         write_bytes_per_sec=write_bps,
+                        pool=meta.pool if meta else None,
                     )
                 )
 

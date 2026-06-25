@@ -40,6 +40,7 @@ export interface HddData {
   smart_healthy: boolean | null;
   read_bytes_per_sec: number;
   write_bytes_per_sec: number;
+  pool: string | null;
 }
 
 export interface NvmeData {
@@ -48,6 +49,7 @@ export interface NvmeData {
   temp_celsius: number | null;
   read_bytes_per_sec: number;
   write_bytes_per_sec: number;
+  pool: string | null;
 }
 
 export interface PoolData {

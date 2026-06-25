@@ -43,6 +43,7 @@ class HddData(BaseModel):
     smart_healthy: bool | None
     read_bytes_per_sec: float
     write_bytes_per_sec: float
+    pool: str | None = None
 
 
 class NvmeData(BaseModel):
@@ -51,6 +52,7 @@ class NvmeData(BaseModel):
     temp_celsius: float | None
     read_bytes_per_sec: float
     write_bytes_per_sec: float
+    pool: str | None = None
 
 
 class PoolData(BaseModel):

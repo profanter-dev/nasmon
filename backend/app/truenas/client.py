@@ -18,6 +18,7 @@ class TrueNasDiskInfo(BaseModel):
     model: str | None = None
     serial: str | None = None
     type: str | None = None
+    pool: str | None = None
 
 
 class TrueNasPoolInfo(BaseModel):
@@ -86,6 +87,7 @@ class TrueNasClient:
                     model=d.get("model"),
                     serial=d.get("serial"),
                     type=d.get("type"),
+                    pool=d.get("pool"),
                 )
                 for d in raw_disks
             ]
@@ -211,6 +213,7 @@ class TrueNasClient:
                     model=d.get("model"),
                     serial=d.get("serial"),
                     type=d.get("type"),
+                    pool=d.get("pool"),
                 )
                 for d in raw_disks
             ]

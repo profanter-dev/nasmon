@@ -17,7 +17,6 @@ export function ServicesCard({ services, onSelect }: Props) {
 
   return (
     <div className="bg-gray-800 rounded-lg p-4 col-span-full">
-      <span className="text-sm font-semibold text-gray-300 block mb-3">Services</span>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
         {services.map((svc) => (
           <button
