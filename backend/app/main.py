@@ -1,3 +1,9 @@
+import os
+
+import psutil
+
+psutil.PROCFS_PATH = os.environ.get("HOST_PROC", "/proc")  # type: ignore[assignment]
+
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 

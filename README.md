@@ -157,9 +157,9 @@ The Vite dev server proxies `/ws` to `localhost:8000`, so the backend must be ru
 
 | Host path               | Container path              | Purpose                              |
 |-------------------------|-----------------------------|--------------------------------------|
-| `/proc`                 | `/proc` (read-only)         | psutil system metrics                |
+| `/proc`                 | `/host/proc` (read-only)    | psutil system metrics (CPU, RAM, disk, network, processes) |
 | `/sys`                  | `/sys` (read-only)          | NVMe temps, fan sensors via sysfs    |
 | `/var/run/docker.sock`  | `/var/run/docker.sock` (ro) | Container status monitoring          |
 | `/mnt/apps/nasmon`      | `/config`                   | Config directory (`.env` lives here) |
 
-No privileged mode is required. The container runs with `apparmor:unconfined` because mounting the host `/proc` read-only prevents Docker from applying its AppArmor profile during container init.
+No privileged mode is required. The host `/proc` is mounted at `/host/proc` (not at `/proc`) so Docker can keep the container's own writable `/proc` intact during init. psutil is pointed at `/host/proc` via the `HOST_PROC` environment variable.
