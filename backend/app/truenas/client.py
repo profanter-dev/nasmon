@@ -105,8 +105,10 @@ class TrueNasClient:
             logger.warning("disk.temperatures failed: %s", e)
 
         try:
-            raw_alerts: list[Any] = await self._send_rpc(ws, "disk.temperature_alerts", [])
-            self.smart_alerts = {str(a) for a in raw_alerts} if raw_alerts else set()
+            disk_names_for_alerts = [d.name for d in self.disks]
+            if disk_names_for_alerts:
+                raw_alerts: list[Any] = await self._send_rpc(ws, "disk.temperature_alerts", [disk_names_for_alerts])
+                self.smart_alerts = {str(a) for a in raw_alerts} if raw_alerts else set()
         except Exception as e:
             logger.warning("disk.temperature_alerts failed: %s", e)
 
@@ -172,8 +174,9 @@ class TrueNasClient:
             if disk_names:
                 raw_temps = await self._send_rpc(ws, "disk.temperatures", [disk_names])
                 self.disk_temps = raw_temps
-            raw_alerts: list[Any] = await self._send_rpc(ws, "disk.temperature_alerts", [])
-            self.smart_alerts = {str(a) for a in raw_alerts} if raw_alerts else set()
+            if disk_names:
+                raw_alerts: list[Any] = await self._send_rpc(ws, "disk.temperature_alerts", [disk_names])
+                self.smart_alerts = {str(a) for a in raw_alerts} if raw_alerts else set()
             raw_pools: list[dict[str, Any]] = await self._send_rpc(ws, "pool.query", [])
             self.pools = [
                 TrueNasPoolInfo(
