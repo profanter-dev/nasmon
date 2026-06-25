@@ -98,6 +98,7 @@ async def _fast_loop() -> None:
             if device not in allowed_disks:
                 continue
             meta = disk_meta.get(device)
+            pool = _truenas.disk_pool_map.get(device)
             if device.startswith("nvme") or (meta and meta.type == "SSD"):
                 nvmes.append(
                     NvmeData(
@@ -106,7 +107,7 @@ async def _fast_loop() -> None:
                         temp_celsius=nvme_temps.get(device),
                         read_bytes_per_sec=read_bps,
                         write_bytes_per_sec=write_bps,
-                        pool=meta.pool if meta else None,
+                        pool=pool,
                     )
                 )
             else:
@@ -123,7 +124,7 @@ async def _fast_loop() -> None:
                         smart_healthy=smart_ok,
                         read_bytes_per_sec=read_bps,
                         write_bytes_per_sec=write_bps,
-                        pool=meta.pool if meta else None,
+                        pool=pool,
                     )
                 )
 

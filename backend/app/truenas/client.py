@@ -42,9 +42,27 @@ class TrueNasClient:
         self.smart_alerts: set[str] = set()
         self.pools: list[TrueNasPoolInfo] = []
         self.datasets: list[TrueNasDatasetInfo] = []
+        self.disk_pool_map: dict[str, str] = {}
         self._ws: Any = None
         self._lock = asyncio.Lock()
         self._backoff: float = 2.0
+
+    @staticmethod
+    def _build_disk_pool_map(raw_pools: list[dict[str, Any]]) -> dict[str, str]:
+        mapping: dict[str, str] = {}
+        for pool in raw_pools:
+            pool_name = pool.get("name", "")
+            topology: dict[str, Any] = pool.get("topology") or {}
+            for vdev_type in ("data", "cache", "log", "spare", "special", "dedup"):
+                for vdev in topology.get(vdev_type) or []:
+                    path: str = vdev.get("path") or ""
+                    if path:
+                        mapping[path.removeprefix("/dev/")] = pool_name
+                    for child in vdev.get("children") or []:
+                        child_path: str = child.get("path") or ""
+                        if child_path:
+                            mapping[child_path.removeprefix("/dev/")] = pool_name
+        return mapping
 
     async def _send_rpc(self, ws: Any, method: str, params: list[Any]) -> Any:
         call_id = str(uuid.uuid4())
@@ -123,6 +141,7 @@ class TrueNasClient:
                 )
                 for p in raw_pools
             ]
+            self.disk_pool_map = self._build_disk_pool_map(raw_pools)
         except Exception as e:
             logger.warning("pool.query failed: %s", e)
 
@@ -187,6 +206,7 @@ class TrueNasClient:
                 )
                 for p in raw_pools
             ]
+            self.disk_pool_map = self._build_disk_pool_map(raw_pools)
             raw_datasets: list[dict[str, Any]] = await self._send_rpc(
                 ws,
                 "pool.dataset.query",
