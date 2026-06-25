@@ -162,4 +162,4 @@ The Vite dev server proxies `/ws` to `localhost:8000`, so the backend must be ru
 | `/var/run/docker.sock`  | `/var/run/docker.sock` (ro) | Container status monitoring          |
 | `/mnt/apps/nasmon`      | `/config`                   | Config directory (`.env` lives here) |
 
-No privileged mode is required.
+No privileged mode is required. The container runs with `apparmor:unconfined` because mounting the host `/proc` read-only prevents Docker from applying its AppArmor profile during container init.
