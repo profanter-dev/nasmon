@@ -3,13 +3,13 @@ services:
     build: .
     container_name: nasmon
     restart: unless-stopped
+    env_file: .env
     environment:
       - HOST_PROC=/host/proc
     volumes:
       - /proc:/host/proc:ro
       - /sys:/sys:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /mnt/apps/nasmon:/config
     networks:
       - traefik
     labels:

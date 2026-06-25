@@ -57,7 +57,14 @@ class TrueNasClient:
                 return data.get("result")
 
     async def _connect_and_auth(self) -> Any:
-        url = f"ws://{settings.truenas_host}:{settings.truenas_ws_port}/websocket"
+        host = settings.truenas_host
+        for scheme in ("https://", "http://", "wss://", "ws://"):
+            if host.startswith(scheme):
+                host = host[len(scheme):]
+                break
+        host = host.rstrip("/")
+        url = f"ws://{host}:{settings.truenas_ws_port}/websocket"
+        logger.info("Connecting to TrueNAS at %s", url)
         ws = await websockets.connect(url)  # type: ignore[attr-defined]
         result = await self._send_rpc(ws, "auth.login_with_api_key", [settings.truenas_api_key])
         if result is not True:

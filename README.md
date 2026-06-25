@@ -39,19 +39,13 @@ git clone <repo-url>
 cd nasmon
 ```
 
-### 2. Create the config directory on the host
+### 2. Create the `.env` file
+
+Copy the example into the same directory as `docker-compose.yml` and fill in your values:
 
 ```bash
-mkdir -p /mnt/apps/nasmon
-```
-
-### 3. Create the `.env` file
-
-Copy the example and fill in your values:
-
-```bash
-cp .env.example /mnt/apps/nasmon/.env
-$EDITOR /mnt/apps/nasmon/.env
+cp .env.example .env
+$EDITOR .env
 ```
 
 Required values:
@@ -64,15 +58,15 @@ Required values:
 
 All other variables have sensible defaults and can be left as-is initially.
 
-### 4. Generate a TrueNAS API key
+### 3. Generate a TrueNAS API key
 
 In the TrueNAS UI: click the user icon in the **top-right toolbar → My API Keys → Add API Key**. Copy the key immediately — TrueNAS will not show it again after you close the dialog. Paste it into `TRUENAS_API_KEY` in your `.env`.
 
-### 5. Add a DNS entry
+### 4. Add a DNS entry
 
 Create an internal DNS record pointing `TRAEFIK_HOST` to the IP of your Docker host. The exact method depends on your DNS setup (Pi-hole, router, etc.).
 
-### 6. Build and start
+### 5. Build and start
 
 ```bash
 docker compose up -d --build
@@ -160,6 +154,5 @@ The Vite dev server proxies `/ws` to `localhost:8000`, so the backend must be ru
 | `/proc`                 | `/host/proc` (read-only)    | psutil system metrics (CPU, RAM, disk, network, processes) |
 | `/sys`                  | `/sys` (read-only)          | NVMe temps, fan sensors via sysfs    |
 | `/var/run/docker.sock`  | `/var/run/docker.sock` (ro) | Container status monitoring          |
-| `/mnt/apps/nasmon`      | `/config`                   | Config directory (`.env` lives here) |
 
 No privileged mode is required. The host `/proc` is mounted at `/host/proc` (not at `/proc`) so Docker can keep the container's own writable `/proc` intact during init. psutil is pointed at `/host/proc` via the `HOST_PROC` environment variable.
