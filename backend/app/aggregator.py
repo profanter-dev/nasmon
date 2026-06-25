@@ -100,11 +100,12 @@ async def _fast_loop() -> None:
             meta = disk_meta.get(device)
             pool = (meta.pool if meta else None) or _truenas.disk_pool_map.get(device)
             if device.startswith("nvme") or (meta and meta.type == "SSD"):
+                raw_temp = _truenas.disk_temps.get(device) or nvme_temps.get(device)
                 nvmes.append(
                     NvmeData(
                         device=device,
                         model=meta.model or "" if meta else "",
-                        temp_celsius=nvme_temps.get(device),
+                        temp_celsius=float(raw_temp) if raw_temp is not None else None,
                         read_bytes_per_sec=read_bps,
                         write_bytes_per_sec=write_bps,
                         pool=pool,

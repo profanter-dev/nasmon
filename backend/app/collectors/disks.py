@@ -29,15 +29,16 @@ def get_disk_io(
 
 
 def get_nvme_temperatures() -> dict[str, float | None]:
+    """Read NVMe temps from sysfs as a fallback when TrueNAS is offline.
+    psutil keys NVMe controllers as 'nvme0', 'nvme1', etc.; map to the
+    standard block device name 'nvme0n1' used everywhere else."""
     result: dict[str, float | None] = {}
     try:
         all_temps = psutil.sensors_temperatures()  # type: ignore[attr-defined]
         for key, sensors in all_temps.items():
-            if key.startswith("nvme"):
-                for sensor in sensors:
-                    label = key
-                    result[label] = float(sensor.current)
-                    break
+            if key.startswith("nvme") and sensors:
+                device = key + "n1"
+                result[device] = float(sensors[0].current)
     except AttributeError:
         pass
     return result
