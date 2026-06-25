@@ -1,6 +1,6 @@
 import asyncio
 import logging
-import re
+import os
 import time
 from typing import Any
 
@@ -26,20 +26,18 @@ from app.truenas.client import TrueNasClient
 
 logger = logging.getLogger(__name__)
 
-_REAL_DISK_RE = re.compile(
-    r"^("
-    r"sd[a-z]+|"          # SATA/SAS HDDs: sda, sdb, ...
-    r"hd[a-z]+|"          # legacy IDE
-    r"vd[a-z]+|"          # virtio
-    r"xvd[a-z]+|"         # Xen
-    r"nvme\d+n\d+|"       # NVMe whole disks: nvme0n1 (NOT nvme0n1p1)
-    r"mmcblk\d+"          # SD cards / eMMC
-    r")$"
-)
-
-
-def _is_real_disk(device: str) -> bool:
-    return bool(_REAL_DISK_RE.match(device))
+def _real_disk_names(truenas_names: set[str]) -> set[str]:
+    if truenas_names:
+        return truenas_names
+    # Fallback when TrueNAS is offline: /sys/block lists only whole disks,
+    # not partitions. Filter out loop devices.
+    try:
+        return {
+            d for d in os.listdir("/sys/block")
+            if not d.startswith("loop")
+        }
+    except OSError:
+        return set()
 
 
 connected_clients: set[WebSocket] = set()
@@ -91,12 +89,13 @@ async def _fast_loop() -> None:
         services = await get_services_data(_arr_health_cache)
 
         disk_meta = {d.name: d for d in _truenas.disks}
+        allowed_disks = _real_disk_names(set(disk_meta.keys()))
 
         hdds: list[HddData] = []
         nvmes: list[NvmeData] = []
 
         for device, (read_bps, write_bps) in disk_io.items():
-            if not _is_real_disk(device):
+            if device not in allowed_disks:
                 continue
             meta = disk_meta.get(device)
             if device.startswith("nvme") or (meta and meta.type == "SSD"):
