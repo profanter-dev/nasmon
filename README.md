@@ -4,12 +4,13 @@ A read-only NAS monitoring dashboard designed for TrueNAS SCALE. The browser con
 
 ## Features
 
+- Dashboard organized into labeled sections: **System**, one section **per ZFS pool** (pool card + its member disks), **Services**
 - CPU usage, per-core breakdown, frequency, and temperature sparklines
 - RAM usage with sparkline history
 - Network interface throughput (per-interface, live)
-- ZFS pool status, usage, and health badges
+- ZFS pool status and usable capacity (accounts for RAIDZ/mirror overhead)
 - HDD and NVMe temperatures, SMART status, and real-time R/W throughput
-- Fan RPM (graceful fallback when kernel driver is unavailable)
+- Disks grouped under their ZFS pool; unassigned disks in a separate section
 - Docker container status grid with per-service detail drawer
 - Optional health alerts for \*arr applications (Sonarr, Radarr, Prowlarr)
 - WebSocket auto-reconnect with backoff; last snapshot stays visible during disconnects
@@ -98,23 +99,22 @@ The dashboard will be available at the hostname you set in `TRAEFIK_HOST`.
 
 ### \*arr health (all optional)
 
-If both `_URL` and `_API_KEY` are set for a service, nasmon will poll `/api/v3/health` every 2 minutes and surface any warnings or errors in the service detail drawer. If only the Docker socket is available, the service still appears with its container state.
+If both `_URL` and `_API_KEY` are set for a service, nasmon polls the health endpoint every 2 minutes and surfaces any warnings or errors in the service detail drawer. If only the Docker socket is available, the service still appears with its container state.
 
-| Variable         | Description                  |
-|------------------|------------------------------|
-| `SONARR_URL`     | e.g. `http://sonarr:8989`    |
-| `SONARR_API_KEY` | Sonarr API key               |
-| `RADARR_URL`     | e.g. `http://radarr:7878`    |
-| `RADARR_API_KEY` | Radarr API key               |
-| `PROWLARR_URL`   | e.g. `http://prowlarr:9696`  |
-| `PROWLARR_API_KEY`| Prowlarr API key            |
+| Variable          | Description                  |
+|-------------------|------------------------------|
+| `SONARR_URL`      | e.g. `http://sonarr:8989`    |
+| `SONARR_API_KEY`  | Sonarr API key               |
+| `RADARR_URL`      | e.g. `http://radarr:7878`    |
+| `RADARR_API_KEY`  | Radarr API key               |
+| `PROWLARR_URL`    | e.g. `http://prowlarr:9696`  |
+| `PROWLARR_API_KEY`| Prowlarr API key             |
 
 ## Graceful degradation
 
 | Condition                          | Behaviour                                                                 |
 |------------------------------------|---------------------------------------------------------------------------|
-| TrueNAS unreachable                | HDD temps and pool data show as unavailable; psutil metrics keep running  |
-| Fan driver not loaded (`it87`)     | Fan card shows "Driver not loaded"; nothing else affected                 |
+| TrueNAS unreachable                | HDD/NVMe temps and pool data show as unavailable; psutil metrics keep running |
 | Docker socket not mounted          | Services section is hidden entirely                                       |
 | \*arr API key not configured       | Service shown with Docker container state only; no alerts section         |
 | \*arr service unreachable          | Single red "Connection" alert shown in the detail drawer                  |
@@ -129,12 +129,6 @@ cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
-```
-
-Type-check with mypy:
-
-```bash
-mypy app/
 ```
 
 ### Frontend
@@ -152,7 +146,7 @@ The Vite dev server proxies `/ws` to `localhost:8000`, so the backend must be ru
 | Host path               | Container path              | Purpose                              |
 |-------------------------|-----------------------------|--------------------------------------|
 | `/proc`                 | `/host/proc` (read-only)    | psutil system metrics (CPU, RAM, disk, network, processes) |
-| `/sys`                  | `/sys` (read-only)          | NVMe temps, fan sensors via sysfs    |
+| `/sys`                  | `/sys` (read-only)          | NVMe temperatures via sysfs (fallback when TrueNAS offline) |
 | `/var/run/docker.sock`  | `/var/run/docker.sock` (ro) | Container status monitoring          |
 
 No privileged mode is required. The host `/proc` is mounted at `/host/proc` (not at `/proc`) so Docker can keep the container's own writable `/proc` intact during init. psutil is pointed at `/host/proc` via the `HOST_PROC` environment variable.
