@@ -63,7 +63,7 @@ class TrueNasClient:
                 host = host[len(scheme):]
                 break
         host = host.rstrip("/")
-        url = f"ws://{host}:{settings.truenas_ws_port}/websocket"
+        url = f"ws://{host}:{settings.truenas_ws_port}/api/current"
         logger.info("Connecting to TrueNAS at %s", url)
         ws = await websockets.connect(url)  # type: ignore[attr-defined]
         result = await self._send_rpc(ws, "auth.login_with_api_key", [settings.truenas_api_key])
