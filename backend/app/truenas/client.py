@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import ssl
 import uuid
 from typing import Any
 
@@ -63,9 +64,13 @@ class TrueNasClient:
                 host = host[len(scheme):]
                 break
         host = host.rstrip("/")
-        url = f"ws://{host}:{settings.truenas_ws_port}/api/current"
+        url = f"wss://{host}:{settings.truenas_ws_port}/api/current"
         logger.info("Connecting to TrueNAS at %s", url)
-        ws = await websockets.connect(url)  # type: ignore[attr-defined]
+        # TrueNAS uses a self-signed certificate by default
+        ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
+        ws = await websockets.connect(url, ssl=ssl_ctx)  # type: ignore[attr-defined]
         result = await self._send_rpc(ws, "auth.login_with_api_key", [settings.truenas_api_key])
         if result is not True:
             await ws.close()

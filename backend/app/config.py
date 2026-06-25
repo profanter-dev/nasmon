@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     truenas_host: str = "192.168.1.29"
     truenas_api_key: str = ""
-    truenas_ws_port: int = 80
+    truenas_ws_port: int = 443
     fast_interval_seconds: float = 2.0
     process_interval_seconds: float = 5.0
     disk_temp_interval_seconds: float = 30.0

@@ -83,7 +83,7 @@ The dashboard will be available at the hostname you set in `TRAEFIK_HOST`.
 | `TRAEFIK_HOST`              | —       | Hostname for Traefik routing (required)  |
 | `TRUENAS_HOST`              | —       | TrueNAS IP address                       |
 | `TRUENAS_API_KEY`           | —       | TrueNAS API key                          |
-| `TRUENAS_WS_PORT`           | `80`    | TrueNAS WebSocket port                   |
+| `TRUENAS_WS_PORT`           | `443`   | TrueNAS HTTPS/WSS port                   |
 | `FAST_INTERVAL_SECONDS`     | `2`     | How often CPU/RAM/network are pushed     |
 | `PROCESS_INTERVAL_SECONDS`  | `5`     | How often the process list is refreshed  |
 | `DISK_TEMP_INTERVAL_SECONDS`| `30`    | How often disk temps are fetched         |
