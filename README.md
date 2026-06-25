@@ -66,7 +66,7 @@ All other variables have sensible defaults and can be left as-is initially.
 
 ### 4. Generate a TrueNAS API key
 
-In the TrueNAS UI: **System → API Keys → Add**. Read-only access is sufficient. Paste the key into `TRUENAS_API_KEY` in your `.env`.
+In the TrueNAS UI: click the user icon in the **top-right toolbar → My API Keys → Add API Key**. Copy the key immediately — TrueNAS will not show it again after you close the dialog. Paste it into `TRUENAS_API_KEY` in your `.env`.
 
 ### 5. Add a DNS entry
 
