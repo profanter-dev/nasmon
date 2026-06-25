@@ -78,50 +78,66 @@ class TrueNasClient:
         return ws
 
     async def _fetch_all(self, ws: Any) -> None:
-        raw_disks: list[dict[str, Any]] = await self._send_rpc(ws, "disk.query", [[], {"extra": {}}])
-        self.disks = [
-            TrueNasDiskInfo(
-                name=d.get("name", ""),
-                model=d.get("model"),
-                serial=d.get("serial"),
-                type=d.get("type"),
+        try:
+            raw_disks: list[dict[str, Any]] = await self._send_rpc(ws, "disk.query", [[], {"extra": {}}])
+            self.disks = [
+                TrueNasDiskInfo(
+                    name=d.get("name", ""),
+                    model=d.get("model"),
+                    serial=d.get("serial"),
+                    type=d.get("type"),
+                )
+                for d in raw_disks
+            ]
+        except Exception as e:
+            logger.warning("disk.query failed: %s", e)
+
+        try:
+            disk_names = [d.name for d in self.disks]
+            if disk_names:
+                raw_temps: dict[str, float | None] = await self._send_rpc(
+                    ws, "disk.temperatures", [disk_names]
+                )
+                self.disk_temps = raw_temps
+        except Exception as e:
+            logger.warning("disk.temperatures failed: %s", e)
+
+        try:
+            raw_alerts: list[Any] = await self._send_rpc(ws, "disk.temperature_alerts", [])
+            self.smart_alerts = {str(a) for a in raw_alerts} if raw_alerts else set()
+        except Exception as e:
+            logger.warning("disk.temperature_alerts failed: %s", e)
+
+        try:
+            raw_pools: list[dict[str, Any]] = await self._send_rpc(ws, "pool.query", [])
+            self.pools = [
+                TrueNasPoolInfo(
+                    name=p.get("name", ""),
+                    status=p.get("status", "UNKNOWN"),
+                    size=p.get("size"),
+                    allocated=p.get("allocated"),
+                )
+                for p in raw_pools
+            ]
+        except Exception as e:
+            logger.warning("pool.query failed: %s", e)
+
+        try:
+            raw_datasets: list[dict[str, Any]] = await self._send_rpc(
+                ws,
+                "pool.dataset.query",
+                [[["name", "in", ["media", "apps"]]]],
             )
-            for d in raw_disks
-        ]
-
-        disk_names = [d.name for d in self.disks]
-        raw_temps: dict[str, float | None] = await self._send_rpc(
-            ws, "disk.temperatures", [{"names": disk_names}]
-        )
-        self.disk_temps = raw_temps
-
-        raw_alerts: list[Any] = await self._send_rpc(ws, "disk.temperature_alerts", [])
-        self.smart_alerts = {str(a) for a in raw_alerts} if raw_alerts else set()
-
-        raw_pools: list[dict[str, Any]] = await self._send_rpc(ws, "pool.query", [])
-        self.pools = [
-            TrueNasPoolInfo(
-                name=p.get("name", ""),
-                status=p.get("status", "UNKNOWN"),
-                size=p.get("size"),
-                allocated=p.get("allocated"),
-            )
-            for p in raw_pools
-        ]
-
-        raw_datasets: list[dict[str, Any]] = await self._send_rpc(
-            ws,
-            "pool.dataset.query",
-            [[["name", "in", ["media", "apps"]]]],
-        )
-        self.datasets = [
-            TrueNasDatasetInfo(
-                name=ds.get("name", ""),
-                used=ds.get("used", {}).get("parsed") if isinstance(ds.get("used"), dict) else ds.get("used"),
-                available=ds.get("available", {}).get("parsed") if isinstance(ds.get("available"), dict) else ds.get("available"),
-            )
-            for ds in raw_datasets
-        ]
+            self.datasets = [
+                TrueNasDatasetInfo(
+                    name=ds.get("name", ""),
+                    used=ds.get("used", {}).get("parsed") if isinstance(ds.get("used"), dict) else ds.get("used"),
+                    available=ds.get("available", {}).get("parsed") if isinstance(ds.get("available"), dict) else ds.get("available"),
+                )
+                for ds in raw_datasets
+            ]
+        except Exception as e:
+            logger.warning("pool.dataset.query failed: %s", e)
 
     async def run(self) -> None:
         while True:
@@ -152,7 +168,7 @@ class TrueNasClient:
         try:
             disk_names = [d.name for d in self.disks]
             if disk_names:
-                raw_temps = await self._send_rpc(ws, "disk.temperatures", [{"names": disk_names}])
+                raw_temps = await self._send_rpc(ws, "disk.temperatures", [disk_names])
                 self.disk_temps = raw_temps
             raw_alerts: list[Any] = await self._send_rpc(ws, "disk.temperature_alerts", [])
             self.smart_alerts = {str(a) for a in raw_alerts} if raw_alerts else set()
