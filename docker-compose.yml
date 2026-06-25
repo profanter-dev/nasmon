@@ -15,8 +15,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.nasmon.rule=Host(`${TRAEFIK_HOST}`)"
-      - "traefik.http.routers.nasmon.entrypoints=websecure"
-      - "traefik.http.routers.nasmon.tls=true"
+      - traefik.http.routers.nasmon.entrypoints=websecure
+      - traefik.http.routers.nasmon.tls=true
+      - traefik.http.routers.nasmon.tls.certresolver=letsencrypt
+      - traefik.http.routers.nasmon.service=nasmon
       - "traefik.http.services.nasmon.loadbalancer.server.port=8000"
 
 networks:
