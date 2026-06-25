@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 import time
 from typing import Any
 
@@ -24,6 +25,22 @@ from app.models import (
 from app.truenas.client import TrueNasClient
 
 logger = logging.getLogger(__name__)
+
+_REAL_DISK_RE = re.compile(
+    r"^("
+    r"sd[a-z]+|"          # SATA/SAS HDDs: sda, sdb, ...
+    r"hd[a-z]+|"          # legacy IDE
+    r"vd[a-z]+|"          # virtio
+    r"xvd[a-z]+|"         # Xen
+    r"nvme\d+n\d+|"       # NVMe whole disks: nvme0n1 (NOT nvme0n1p1)
+    r"mmcblk\d+"          # SD cards / eMMC
+    r")$"
+)
+
+
+def _is_real_disk(device: str) -> bool:
+    return bool(_REAL_DISK_RE.match(device))
+
 
 connected_clients: set[WebSocket] = set()
 
@@ -79,6 +96,8 @@ async def _fast_loop() -> None:
         nvmes: list[NvmeData] = []
 
         for device, (read_bps, write_bps) in disk_io.items():
+            if not _is_real_disk(device):
+                continue
             meta = disk_meta.get(device)
             if device.startswith("nvme") or (meta and meta.type == "SSD"):
                 nvmes.append(
