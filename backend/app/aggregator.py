@@ -56,7 +56,7 @@ async def broadcast(snapshot: DashboardSnapshot) -> None:
     _last_snapshot = snapshot
     payload = snapshot.model_dump_json()
     dead: set[WebSocket] = set()
-    for client in connected_clients:
+    for client in set(connected_clients):
         try:
             await client.send_text(payload)
         except Exception:
