@@ -16,14 +16,17 @@ type DiskEntry = { type: "hdd"; data: HddData } | { type: "nvme"; data: NvmeData
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div>
-      <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500 pb-2 mb-3 border-b border-gray-700">
-        {title}
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <section className="fade-in">
+      <div className="flex items-center gap-3 mb-4">
+        <h2 className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          {title}
+        </h2>
+        <div className="h-px flex-1 bg-gradient-to-r from-white/12 to-transparent" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {children}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -33,16 +36,16 @@ export default function App() {
 
   if (!snapshot) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-gray-400">
-        Connecting…
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-slate-400">
+        <div className="h-10 w-10 rounded-full border-2 border-white/15 border-t-sky-400 animate-spin" />
+        <span className="text-sm tracking-wide">Connecting to nasmon…</span>
       </div>
     );
   }
 
-  const selectedSvc: ServiceStatus | null =
-    selectedService
-      ? (snapshot.services.find((s) => s.name === selectedService) ?? null)
-      : null;
+  const selectedSvc: ServiceStatus | null = selectedService
+    ? (snapshot.services.find((s) => s.name === selectedService) ?? null)
+    : null;
 
   const disksByPool = new Map<string, DiskEntry[]>();
   const unassignedDisks: DiskEntry[] = [];
@@ -69,10 +72,30 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <ConnectionStatus connected={connected} truenasConnected={snapshot.truenas_connected} />
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#060810]/70 border-b border-white/8">
+        <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-sky-500/30 to-violet-500/30 border border-white/10 shadow-lg shadow-sky-500/10">
+              <svg viewBox="0 0 24 24" className="h-5 w-5 text-sky-300" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="5" rx="1.5" />
+                <rect x="3" y="12" width="18" height="5" rx="1.5" />
+                <circle cx="7" cy="6.5" r="0.6" fill="currentColor" />
+                <circle cx="7" cy="14.5" r="0.6" fill="currentColor" />
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-base font-bold tracking-tight leading-none">nasmon</h1>
+              <p className="text-[0.68rem] text-slate-500 leading-none mt-1 hidden sm:block">
+                NAS monitoring
+              </p>
+            </div>
+          </div>
+          <ConnectionStatus connected={connected} truenasConnected={snapshot.truenas_connected} />
+        </div>
+      </header>
 
-      <div className="p-4 space-y-8">
+      <main className="mx-auto max-w-[1600px] px-4 sm:px-6 py-6 space-y-8">
         <Section title="System">
           <CpuCard cpu={snapshot.cpu} />
           <RamCard ram={snapshot.ram} />
@@ -101,12 +124,20 @@ export default function App() {
             <ServicesCard services={snapshot.services} onSelect={setSelectedService} />
           </Section>
         )}
-      </div>
 
-      <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ProcessTable title="Top CPU Processes" processes={snapshot.top_cpu_processes} />
-        <ProcessTable title="Top RAM Processes" processes={snapshot.top_ram_processes} />
-      </div>
+        <section className="fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Processes
+            </h2>
+            <div className="h-px flex-1 bg-gradient-to-r from-white/12 to-transparent" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ProcessTable title="Top CPU" processes={snapshot.top_cpu_processes} accent="#38bdf8" />
+            <ProcessTable title="Top RAM" processes={snapshot.top_ram_processes} accent="#a78bfa" />
+          </div>
+        </section>
+      </main>
 
       <ServiceDrawer service={selectedSvc} onClose={() => setSelectedService(null)} />
     </div>

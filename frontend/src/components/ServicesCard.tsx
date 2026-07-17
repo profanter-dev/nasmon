@@ -6,29 +6,33 @@ interface Props {
 }
 
 const dotColor: Record<string, string> = {
-  green: "text-green-400",
-  yellow: "text-yellow-400",
-  red: "text-red-400",
-  grey: "text-gray-500",
+  green: "bg-emerald-400 shadow-[0_0_8px_1px_rgba(52,211,153,0.6)]",
+  yellow: "bg-amber-400 shadow-[0_0_8px_1px_rgba(251,191,36,0.6)]",
+  red: "bg-red-400 shadow-[0_0_8px_1px_rgba(248,113,113,0.6)]",
+  grey: "bg-slate-500",
 };
 
 export function ServicesCard({ services, onSelect }: Props) {
   if (services.length === 0) return null;
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 col-span-full">
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+    <div className="glass p-4 col-span-full">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
         {services.map((svc) => (
           <button
             key={svc.name}
             onClick={() => onSelect(svc.name)}
-            className="flex flex-col items-start gap-0.5 rounded-lg bg-gray-700 hover:bg-gray-600 px-3 py-2 text-left transition-colors"
+            className="group flex flex-col items-start gap-1 rounded-xl border border-white/6 bg-white/4 hover:bg-white/8 hover:border-white/14 px-3 py-2.5 text-left transition-all active:scale-[0.98]"
           >
-            <div className="flex items-center gap-1.5">
-              <span className={`text-base leading-none ${dotColor[svc.status] ?? "text-gray-500"}`}>●</span>
-              <span className="text-xs font-medium text-gray-200 truncate">{svc.name}</span>
+            <div className="flex items-center gap-2 w-full min-w-0">
+              <span
+                className={`h-2 w-2 shrink-0 rounded-full ${dotColor[svc.status] ?? "bg-slate-500"}`}
+              />
+              <span className="text-sm font-medium text-slate-100 truncate">{svc.name}</span>
             </div>
-            <span className="text-[10px] text-gray-500 ml-5">{svc.stack}</span>
+            <span className="text-[0.65rem] text-slate-500 ml-4 truncate w-full">
+              {svc.stack}
+            </span>
           </button>
         ))}
       </div>
